@@ -35,6 +35,10 @@ wc(int fd, char *name)
 int
 main(int argc, char *argv[])
 {
+  int j = 0;
+  while(j++ < argc){
+	printf("argv:%s\n", argv[j]);
+  }
   int fd, i;
 
   if(argc <= 1){
