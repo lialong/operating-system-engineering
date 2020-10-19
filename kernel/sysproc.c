@@ -95,3 +95,22 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+uint64
+sys_trace(void){
+  int n;
+  if(argint(0, &n) < 0)
+    return -1;
+  struct proc *p = myproc();
+  char *mask = p->mask;
+  int i = 0;
+  while (i < 23 && n > 0){
+    if (n % 2){
+      mask[i++] = '1';
+    }else {
+      mask[i++] = '0';
+    }
+    n >>= 1;
+  }
+  return 0;
+}
