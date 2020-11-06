@@ -6,6 +6,10 @@
 #include "proc.h"
 #include "defs.h"
 
+extern char etext[];  // kernel.ld sets this to end of kernel code.
+
+extern char trampoline[]; // trampoline.S
+
 struct cpu cpus[NCPU];
 
 struct proc proc[NPROC];
@@ -34,14 +38,14 @@ procinit(void)
       // Allocate a page for the process's kernel stack.
       // Map it high in memory, followed by an invalid
       // guard page.
-      char *pa = kalloc();
+      /*char *pa = kalloc();
       if(pa == 0)
         panic("kalloc");
       uint64 va = KSTACK((int) (p - proc));
       kvmmap(va, (uint64)pa, PGSIZE, PTE_R | PTE_W);
-      p->kstack = va;
+      p->kstack = va;*/
   }
-  kvminithart();
+  //kvminithart();
 }
 
 // Must be called with interrupts disabled,
@@ -113,6 +117,15 @@ found:
     return 0;
   }
 
+  //创建一个内核页表，并分配一个内核栈
+  p->kernelPageTable = kvmmake();
+  char *pa = kalloc();
+  if(pa == 0)
+    panic("kalloc");
+  uint64 va = TRAMPOLINE - 2*PGSIZE;
+  mappages(p->kernelPageTable, va, PGSIZE, (uint64)pa, PTE_R | PTE_W);
+  p->kstack = va;
+
   // An empty user page table.
   p->pagetable = proc_pagetable(p);
   if(p->pagetable == 0){
@@ -139,6 +152,9 @@ freeproc(struct proc *p)
   if(p->trapframe)
     kfree((void*)p->trapframe);
   p->trapframe = 0;
+  if(p->kernelPageTable)
+    proc_free_kernel_pagetable(p->kstack, p->kernelPageTable);
+  p->kernelPageTable = 0;
   if(p->pagetable)
     proc_freepagetable(p->pagetable, p->sz);
   p->pagetable = 0;
@@ -183,6 +199,25 @@ proc_pagetable(struct proc *p)
   }
 
   return pagetable;
+}
+
+// Free a process's kernel page table, and free the
+// physical memory it refers to.
+void
+proc_free_kernel_pagetable(uint64 kstack, pagetable_t pagetable)
+{
+  uvmunmap(pagetable, UART0, 1, 0);
+  uvmunmap(pagetable, VIRTIO0, 1, 0);
+  uvmunmap(pagetable, CLINT, 0x10000/PGSIZE, 0);
+  uvmunmap(pagetable, PLIC, 0x400000/PGSIZE, 0);
+  uvmunmap(pagetable, KERNBASE, ((uint64)etext-KERNBASE)/PGSIZE, 0);
+  uvmunmap(pagetable, (uint64)etext, (PHYSTOP-(uint64)etext)/PGSIZE, 0);
+  uvmunmap(pagetable, TRAMPOLINE, 1, 0);
+  /*struct proc *p = myproc();
+  uvmunmap(pagetable, 0, p->sz/PGSIZE - 2, 0);
+  uvmunmap(pagetable, p->sz - 2*PGSIZE, 1, 0);*/
+
+  uvmfree2(pagetable, kstack, 1);
 }
 
 // Free a process's page table, and free the
@@ -473,8 +508,11 @@ scheduler(void)
         // before jumping back to us.
         p->state = RUNNING;
         c->proc = p;
+        w_satp(MAKE_SATP(p->kernelPageTable));
+        sfence_vma();
         swtch(&c->context, &p->context);
 
+        kvminithart();
         // Process is done running for now.
         // It should have changed its p->state before coming back.
         c->proc = 0;

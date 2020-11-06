@@ -5,6 +5,8 @@
 #include "riscv.h"
 #include "defs.h"
 #include "fs.h"
+#include "spinlock.h"
+#include "proc.h"
 
 /*
  * the kernel's page table.
@@ -136,8 +138,8 @@ kvmpa(uint64 va)
   uint64 off = va % PGSIZE;
   pte_t *pte;
   uint64 pa;
-  
-  pte = walk(kernel_pagetable, va, 0);
+
+  pte = walk(myproc()->kernelPageTable, va, 0);
   if(pte == 0)
     panic("kvmpa");
   if((*pte & PTE_V) == 0)
@@ -292,6 +294,16 @@ freewalk(pagetable_t pagetable)
     }
   }
   kfree((void*)pagetable);
+}
+
+// Free n user memory pages start va,
+// then free page-table pages.
+void
+uvmfree2(pagetable_t pagetable, uint64 va, uint npages)
+{
+  if(npages > 0)
+    uvmunmap(pagetable, va, npages, 1);
+  freewalk(pagetable);
 }
 
 // Free user memory pages,

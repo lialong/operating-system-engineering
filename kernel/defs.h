@@ -91,6 +91,7 @@ void            exit(int);
 int             fork(void);
 int             growproc(int);
 pagetable_t     proc_pagetable(struct proc *);
+void            proc_free_kernel_pagetable(uint64, pagetable_t);
 void            proc_freepagetable(pagetable_t, uint64);
 int             kill(int);
 struct cpu*     mycpu(void);
@@ -173,6 +174,7 @@ uint64          uvmdealloc(pagetable_t, uint64, uint64);
 int             uvmcopy(pagetable_t, pagetable_t, uint64);
 #endif
 void            uvmfree(pagetable_t, uint64);
+void            uvmfree2(pagetable_t, uint64, uint);
 void            uvmunmap(pagetable_t, uint64, uint64, int);
 void            uvmclear(pagetable_t, uint64);
 uint64          walkaddr(pagetable_t, uint64);
