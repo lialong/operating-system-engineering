@@ -28,7 +28,7 @@ pagetable_t kvmmake(){
   mappages(kernel_pagetable, VIRTIO0, PGSIZE, VIRTIO0,PTE_R | PTE_W);
 
   // CLINT
-  mappages(kernel_pagetable, CLINT,0x10000, CLINT, PTE_R | PTE_W);
+  //mappages(kernel_pagetable, CLINT,0x10000, CLINT, PTE_R | PTE_W);
 
   // PLIC
   mappages(kernel_pagetable, PLIC,0x400000, PLIC,PTE_R | PTE_W);
@@ -52,6 +52,8 @@ void
 kvminit()
 {
   kernel_pagetable = kvmmake();
+  // CLINT
+  mappages(kernel_pagetable, CLINT,0x10000, CLINT, PTE_R | PTE_W);
 }
 
 // Switch h/w page table register to the kernel's page table,
@@ -189,8 +191,9 @@ uvmunmap(pagetable_t pagetable, uint64 va, uint64 npages, int do_free)
   for(a = va; a < va + npages*PGSIZE; a += PGSIZE){
     if((pte = walk(pagetable, a, 0)) == 0)
       panic("uvmunmap: walk");
-    if((*pte & PTE_V) == 0)
-      panic("uvmunmap: not mapped");
+    if((*pte & PTE_V) == 0){
+	  panic("uvmunmap: not mapped");
+	}  
     if(PTE_FLAGS(*pte) == PTE_V)
       panic("uvmunmap: not a leaf");
     if(do_free){
@@ -396,7 +399,7 @@ copyout(pagetable_t pagetable, uint64 dstva, char *src, uint64 len)
 int
 copyin(pagetable_t pagetable, char *dst, uint64 srcva, uint64 len)
 {
-  uint64 n, va0, pa0;
+  /*uint64 n, va0, pa0;
 
   while(len > 0){
     va0 = PGROUNDDOWN(srcva);
@@ -412,7 +415,8 @@ copyin(pagetable_t pagetable, char *dst, uint64 srcva, uint64 len)
     dst += n;
     srcva = va0 + PGSIZE;
   }
-  return 0;
+  return 0;*/
+  return copyin_new(pagetable, dst, srcva, len);
 }
 
 // Copy a null-terminated string from user to kernel.
@@ -456,6 +460,7 @@ copyinstr(pagetable_t pagetable, char *dst, uint64 srcva, uint64 max)
   } else {
     return -1;
   }
+  //return copyinstr_new(pagetable, dst, srcva, max);
 }
 
 static void traversal_pt(pagetable_t pagetable, int level){

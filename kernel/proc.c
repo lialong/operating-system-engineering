@@ -153,7 +153,7 @@ freeproc(struct proc *p)
     kfree((void*)p->trapframe);
   p->trapframe = 0;
   if(p->kernelPageTable)
-    proc_free_kernel_pagetable(p->kstack, p->kernelPageTable);
+    proc_free_kernel_pagetable(p->kstack, p->kernelPageTable, p->sz);
   p->kernelPageTable = 0;
   if(p->pagetable)
     proc_freepagetable(p->pagetable, p->sz);
@@ -204,19 +204,16 @@ proc_pagetable(struct proc *p)
 // Free a process's kernel page table, and free the
 // physical memory it refers to.
 void
-proc_free_kernel_pagetable(uint64 kstack, pagetable_t pagetable)
+proc_free_kernel_pagetable(uint64 kstack, pagetable_t pagetable, uint64 sz)
 {
   uvmunmap(pagetable, UART0, 1, 0);
   uvmunmap(pagetable, VIRTIO0, 1, 0);
-  uvmunmap(pagetable, CLINT, 0x10000/PGSIZE, 0);
+ //uvmunmap(pagetable, CLINT, 0x10000/PGSIZE, 0);
   uvmunmap(pagetable, PLIC, 0x400000/PGSIZE, 0);
   uvmunmap(pagetable, KERNBASE, ((uint64)etext-KERNBASE)/PGSIZE, 0);
   uvmunmap(pagetable, (uint64)etext, (PHYSTOP-(uint64)etext)/PGSIZE, 0);
   uvmunmap(pagetable, TRAMPOLINE, 1, 0);
-  /*struct proc *p = myproc();
-  uvmunmap(pagetable, 0, p->sz/PGSIZE - 2, 0);
-  uvmunmap(pagetable, p->sz - 2*PGSIZE, 1, 0);*/
-
+  uvmunmap(pagetable, 0, PGROUNDUP(sz)/PGSIZE, 0);
   uvmfree2(pagetable, kstack, 1);
 }
 
@@ -247,6 +244,7 @@ void
 userinit(void)
 {
   struct proc *p;
+  pte_t *pte, *kernelPte;
 
   p = allocproc();
   initproc = p;
@@ -255,6 +253,11 @@ userinit(void)
   // and data into it.
   uvminit(p->pagetable, initcode, sizeof(initcode));
   p->sz = PGSIZE;
+
+  //将进程页表的mapping，复制一份到进程内核页表
+  pte = walk(p->pagetable, 0, 0);
+  kernelPte = walk(p->kernelPageTable, 0, 1);
+  *kernelPte = (*pte) & ~PTE_U;
 
   // prepare for the very first "return" from kernel to user.
   p->trapframe->epc = 0;      // user program counter
@@ -293,9 +296,10 @@ growproc(int n)
 int
 fork(void)
 {
-  int i, pid;
+  int i, pid, j;
   struct proc *np;
   struct proc *p = myproc();
+  pte_t *pte, *kernelPte;
 
   // Allocate process.
   if((np = allocproc()) == 0){
@@ -307,6 +311,12 @@ fork(void)
     freeproc(np);
     release(&np->lock);
     return -1;
+  }
+  //将进程页表的mapping，复制一份到进程内核页表
+  for (j = 0; j < p->sz; j+=PGSIZE){
+    pte = walk(np->pagetable, j, 0);
+    kernelPte = walk(np->kernelPageTable, j, 1);
+    *kernelPte = (*pte) & ~PTE_U;
   }
   np->sz = p->sz;
 
