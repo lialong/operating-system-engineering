@@ -426,7 +426,7 @@ copyin(pagetable_t pagetable, char *dst, uint64 srcva, uint64 len)
 int
 copyinstr(pagetable_t pagetable, char *dst, uint64 srcva, uint64 max)
 {
-  uint64 n, va0, pa0;
+  /*uint64 n, va0, pa0;
   int got_null = 0;
 
   while(got_null == 0 && max > 0){
@@ -459,8 +459,24 @@ copyinstr(pagetable_t pagetable, char *dst, uint64 srcva, uint64 max)
     return 0;
   } else {
     return -1;
-  }
-  //return copyinstr_new(pagetable, dst, srcva, max);
+  }*/
+  return copyinstr_new(pagetable, dst, srcva, max);
+}
+
+static void flag_to_char(int flag, char *arr){
+  int i = 0;
+  if (flag & PTE_R){
+      arr[i++] = 'R';
+    }
+  if (flag & PTE_W){
+      arr[i++] = 'W';
+    }
+  if (flag & PTE_X){
+      arr[i++] = 'X';
+    }
+  if (flag & PTE_U){
+      arr[i] = 'U';
+    }
 }
 
 static void traversal_pt(pagetable_t pagetable, int level){
@@ -468,14 +484,16 @@ static void traversal_pt(pagetable_t pagetable, int level){
     pte_t pte = pagetable[i];
     if(pte & PTE_V){
       uint64 child = PTE2PA(pte);
+      char arr[4] = {'\0', '\0', '\0', '\0'};
+	  flag_to_char(pte % 32, arr);
       if (level == 0){
-        printf("..%d: pte %p pa %p\n", i, pte, child);
+        printf("..%d: pte %p (%s) pa %p\n", i, pte, arr, child);
         traversal_pt((pagetable_t)child, level + 1);
       }else if (level == 1){
-        printf(".. ..%d: pte %p pa %p\n", i, pte, child);
+        printf(".. ..%d: pte %p (%s) pa %p\n", i, pte, arr, child);
         traversal_pt((pagetable_t)child, level + 1);
       }else{
-        printf(".. .. ..%d: pte %p pa %p\n", i, pte, child);
+        printf(".. .. ..%d: pte %p (%s) pa %p\n", i, pte, arr, child);
       }
     }
   }

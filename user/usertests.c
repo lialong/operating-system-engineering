@@ -2640,7 +2640,7 @@ main(int argc, char *argv[])
     void (*f)(char *);
     char *s;
   } tests[] = {
-    /*{execout, "execout"},
+    {execout, "execout"},
     {copyin, "copyin"},
     {copyout, "copyout"},
     {copyinstr1, "copyinstr1"},
@@ -2667,7 +2667,7 @@ main(int argc, char *argv[])
     {subdir, "subdir"},
     {fourfiles, "fourfiles"},
     {sharedfd, "sharedfd"},
-    {exectest, "exectest"},*/
+    {exectest, "exectest"},
     {bigargtest, "bigargtest"},
     {bigwrite, "bigwrite"},
     {bsstest, "bsstest"},
