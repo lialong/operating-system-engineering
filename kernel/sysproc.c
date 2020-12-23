@@ -41,23 +41,24 @@ sys_wait(void)
 uint64
 sys_sbrk(void)
 {
-  int addr;
   int n;
 
   if(argint(0, &n) < 0)
     return -1;
   struct proc *p = myproc();
-  addr = p->sz;
-  int newSize = addr + n;
+  uint64 addr = p->sz;
+  uint64 newSize = addr + n;
   if(newSize >= MAXVA)
     return addr;
-  p->sz = newSize;
   if(n < 0){
-	for (int i = PGROUNDDOWN(addr - 1); i > ((newSize - 1 < 0) ? (newSize - 1) : PGROUNDDOWN(newSize - 1)) ; i -= PGSIZE){
-	  uvmunmap(p->pagetable, i, 1, 1);
+    if (newSize > addr){
+      newSize = 0;
+      uvmunmap(p->pagetable, 0, PGROUNDUP(addr) / PGSIZE, 1);
+    }else {
+      uvmunmap(p->pagetable, PGROUNDUP(newSize), ( PGROUNDUP(addr) - PGROUNDUP(newSize) ) / PGSIZE, 1);
     }
   }
-  //vmprint(p->pagetable);
+  p->sz = newSize;
   return addr;
 }
 

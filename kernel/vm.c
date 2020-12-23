@@ -355,12 +355,11 @@ int
 copyout(pagetable_t pagetable, uint64 dstva, char *src, uint64 len)
 {
   uint64 n, va0, pa0;
-
   while(len > 0){
     va0 = PGROUNDDOWN(dstva);
     pa0 = walkaddr(pagetable, va0);
 	if(pa0 == 0){
-	  if (va0 >= myproc()->sz){
+	  if (dstva >= myproc()->sz){
         return -1;
       }
       char *mem = kalloc();
@@ -387,15 +386,14 @@ int
 copyin(pagetable_t pagetable, char *dst, uint64 srcva, uint64 len)
 {
   uint64 n, va0, pa0;
-
   while(len > 0){
     va0 = PGROUNDDOWN(srcva);
     pa0 = walkaddr(pagetable, va0);
 	if(pa0 == 0){
-	  if (va0 >= myproc()->sz){
+      if (srcva >= myproc()->sz){
         return -1;
       }
-      char *mem = kalloc();
+	  char *mem = kalloc();
       pa0 = (uint64)mem;
       memset(mem, 0, PGSIZE);
       mappages(pagetable, va0, PGSIZE, pa0, PTE_W|PTE_X|PTE_R|PTE_U);

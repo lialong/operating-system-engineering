@@ -2439,7 +2439,8 @@ sbrkbugs(char *s)
   }
   if(pid == 0){
     int sz = (uint64) sbrk(0);
-    // free all user memory; there used to be a bug that
+    printf("sz:%d\n",sz);
+	// free all user memory; there used to be a bug that
     // would not adjust p->sz correctly in this case,
     // causing exit() to panic.
     sbrk(-sz);
@@ -2447,7 +2448,6 @@ sbrkbugs(char *s)
     exit(0);
   }
   wait(0);
-  printf("passed 1\n");
   pid = fork();
   if(pid < 0){
     printf("fork failed\n");
@@ -2462,7 +2462,6 @@ sbrkbugs(char *s)
     exit(0);
   }
   wait(0);
-  printf("passed 2\n");
   pid = fork();
   if(pid < 0){
     printf("fork failed\n");
@@ -2480,7 +2479,6 @@ sbrkbugs(char *s)
     exit(0);
   }
   wait(0);
-  printf("passed 3\n");
   exit(0);
 }
 
