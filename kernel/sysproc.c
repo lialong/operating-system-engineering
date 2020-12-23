@@ -46,10 +46,18 @@ sys_sbrk(void)
 
   if(argint(0, &n) < 0)
     return -1;
-  addr = myproc()->sz;
-  myproc()->sz += n;
-  /*if(growproc(n) < 0)
-    return -1;*/
+  struct proc *p = myproc();
+  addr = p->sz;
+  int newSize = addr + n;
+  if(newSize >= MAXVA)
+    return addr;
+  p->sz = newSize;
+  if(n < 0){
+	for (int i = PGROUNDDOWN(addr - 1); i > ((newSize - 1 < 0) ? (newSize - 1) : PGROUNDDOWN(newSize - 1)) ; i -= PGSIZE){
+	  uvmunmap(p->pagetable, i, 1, 1);
+    }
+  }
+  //vmprint(p->pagetable);
   return addr;
 }
 

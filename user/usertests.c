@@ -2396,9 +2396,9 @@ stacktest(char *s)
   pid = fork();
   if(pid == 0) {
     char *sp = (char *) r_sp();
-    sp -= PGSIZE;
+	sp -= PGSIZE;
     // the *sp should cause a trap.
-    printf("%s: stacktest: read below stack %p\n", *sp);
+	printf("%s: stacktest: read below stack %p\n", *sp);
     exit(1);
   } else if(pid < 0){
     printf("%s: fork failed\n", s);
@@ -2447,7 +2447,7 @@ sbrkbugs(char *s)
     exit(0);
   }
   wait(0);
-
+  printf("passed 1\n");
   pid = fork();
   if(pid < 0){
     printf("fork failed\n");
@@ -2462,7 +2462,7 @@ sbrkbugs(char *s)
     exit(0);
   }
   wait(0);
-
+  printf("passed 2\n");
   pid = fork();
   if(pid < 0){
     printf("fork failed\n");
@@ -2480,7 +2480,7 @@ sbrkbugs(char *s)
     exit(0);
   }
   wait(0);
-
+  printf("passed 3\n");
   exit(0);
 }
 

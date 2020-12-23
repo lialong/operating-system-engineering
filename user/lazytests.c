@@ -47,7 +47,7 @@ sparse_memory_unmap(char *s)
     exit(1);
   }
   new_end = prev_end + REGION_SZ;
-
+  
   for (i = prev_end + PGSIZE; i < new_end; i += PGSIZE * PGSIZE)
     *(char **)i = i;
 
