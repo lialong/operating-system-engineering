@@ -6,6 +6,8 @@
 #include "proc.h"
 #include "defs.h"
 
+extern int refNum[];
+
 struct spinlock tickslock;
 uint ticks;
 
@@ -65,6 +67,33 @@ usertrap(void)
     intr_on();
 
     syscall();
+  } else if(r_scause() == 13 || r_scause() == 15){
+    pte_t *pte;
+    uint64 addr = r_stval();
+	addr = PGROUNDDOWN(addr);
+	if((pte = walk(p->pagetable, addr, 0)) == 0 || !(*pte & PTE_COW) ){
+      p->killed = 1;
+    }else {
+      char *mem;
+	  uint64 pa = PTE2PA(*pte);
+      uint flags;
+      if(refNum[(pa - KERNBASE)/PGSIZE] == 2){
+        *pte = *pte | PTE_W;
+        *pte = *pte & ~PTE_COW;
+      }else {
+        if((mem = kalloc()) == 0){
+          p->killed = 1;
+        }else {
+          refNum[(pa - KERNBASE)/PGSIZE] -= 1;
+          memmove(mem, (char*)pa, PGSIZE);
+          *pte = *pte | PTE_W;
+          *pte = *pte & ~PTE_COW;
+          flags = PTE_FLAGS(*pte);
+          *pte = PA2PTE((uint64)mem) | flags;
+          refNum[((uint64)mem - KERNBASE)/PGSIZE] += 1;
+        }
+      }
+    }
   } else if((which_dev = devintr()) != 0){
     // ok
   } else {
