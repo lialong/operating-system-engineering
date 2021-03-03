@@ -81,7 +81,7 @@ thread_create(void (*func)())
   }
   t->state = RUNNABLE;
   // YOUR CODE HERE
-  t->stack = (char [])malloc(STACK_SIZE);
+  t->stack = (char*)malloc(STACK_SIZE);
 	t->threadContext.sp = (uint64)(t->stack);
 }
 
