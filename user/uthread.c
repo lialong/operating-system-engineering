@@ -66,6 +66,7 @@ thread_schedule(void)
      * Invoke thread_switch to switch from t to next_thread:
      * thread_switch(??, ??);
      */
+		t->state = RUNNABLE;
     thread_switch(&t->threadContext, &current_thread->threadContext);
   } else
     next_thread = 0;
