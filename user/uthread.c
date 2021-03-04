@@ -82,7 +82,7 @@ thread_create(void (*func)())
   t->state = RUNNABLE;
   // YOUR CODE HERE
 	t->threadContext.ra = (uint64)func;
-	t->threadContext.sp = (uint64)(t->stack);
+	t->threadContext.sp = (uint64)(t->stack) + STACK_SIZE;
 }
 
 void 
