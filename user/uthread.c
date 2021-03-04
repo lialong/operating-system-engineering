@@ -14,6 +14,7 @@
 #define STACK_SIZE  8192
 #define MAX_THREAD  4
 
+
 struct thread {
   char       stack[STACK_SIZE]; /* the thread's stack */
   int        state;             /* FREE, RUNNING, RUNNABLE */
