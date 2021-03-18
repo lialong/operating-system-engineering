@@ -39,7 +39,7 @@ void
 binit(void)
 {
   initlock(&bcache.lock, "bcache");
-
+	printf("NBUC:%d\n", NBUC);
   for(int i = 0; i < NBUC; i++){
   	initlock(&(hashTable[i].lock), "bcache");
   }
