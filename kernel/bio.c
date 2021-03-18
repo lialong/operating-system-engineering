@@ -75,7 +75,7 @@ bget(uint dev, uint blockno)
 	acquire(&bcache.lock);
 	for(b = bcache.buf; b <= bcache.buf + NBUF; b++){
     if(b->refcnt == 0) {
-    	if (!lruBuf){
+    	if (lruBuf == 0){
     		lruBuf = b;
     		continue;
     	}
@@ -93,7 +93,7 @@ bget(uint dev, uint blockno)
 	  lruBuf->valid = 0;
 	  lruBuf->refcnt = 1;
 	  lruBuf->tick = ticks;
-		if(!oldTick){
+		if(oldTick == 0){
 			lastBuf->next = lruBuf;
 			lruBuf->prev = lastBuf;
 		}else {
