@@ -102,12 +102,12 @@ bget(uint dev, uint blockno)
 			lruBuf->prev = lastBuf;
 		}else {
 			if (oldNum != num){
-				acquire(&(hashTable[oldNum].lock));
+				//acquire(&(hashTable[oldNum].lock));
 				lruBuf->prev->next = lruBuf->next;
 				if (lruBuf->next){
 					lruBuf->next->prev = lruBuf->prev;
 				}
-				release(&(hashTable[oldNum].lock));
+				//release(&(hashTable[oldNum].lock));
 				lastBuf->next = lruBuf;
 				lruBuf->prev = lastBuf;
 			}
