@@ -42,7 +42,7 @@ binit(void)
   initlock(&bcache.lock, "bcache");
 
   for(int i = 0; i < NBUC; i++){
-  	initlock(&(hashTable[i].lock), "bcache");
+  	initlock(&(hashTable[i].lock), "bMem");
   }
   for(b = bcache.buf; b < bcache.buf+NBUF; b++){
     initsleeplock(&b->lock, "buffer");
