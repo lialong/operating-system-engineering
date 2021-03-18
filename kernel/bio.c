@@ -41,7 +41,7 @@ binit(void)
   initlock(&bcache.lock, "bcache");
 
   for(int i = 0; i < NBUC; i++){
-  	initlock(&bcache.lock, "bcache");
+  	initlock(&(hashTable[i].lock), "bcache");
   }
 }
 
