@@ -38,8 +38,6 @@ struct bMem hashTable[NBUC];
 void
 binit(void)
 {
-  struct buf *b;
-
   initlock(&bcache.lock, "bcache");
 
   for(int i = 0; i < NBUC; i++){
@@ -73,7 +71,7 @@ bget(uint dev, uint blockno)
 
 	// Not cached.
 	// Recycle the least recently used (LRU) unused buffer.
-	struct buf *lruBuf;
+	struct buf *lruBuf = 0;
 	acquire(&bcache.lock);
 	for(b = bcache.buf + 1; b <= bcache.buf + 30; b++){
     if(b->refcnt == 0) {
