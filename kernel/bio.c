@@ -38,6 +38,7 @@ static struct bMem hashTable[NBUC];
 void
 binit(void)
 {
+  struct buf *b;
   initlock(&bcache.lock, "bcache");
 
   for(int i = 0; i < NBUC; i++){
