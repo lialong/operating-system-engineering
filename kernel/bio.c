@@ -33,7 +33,7 @@ struct bMem{
 	struct buf head;
 };
 
-struct bMem hashTable[NBUC];
+static struct bMem hashTable[NBUC];
 
 void
 binit(void)
@@ -73,7 +73,7 @@ bget(uint dev, uint blockno)
 	// Recycle the least recently used (LRU) unused buffer.
 	struct buf *lruBuf = 0;
 	acquire(&bcache.lock);
-	for(b = bcache.buf + 1; b <= bcache.buf + 30; b++){
+	for(b = bcache.buf; b <= bcache.buf + NBUF; b++){
     if(b->refcnt == 0) {
     	if (!lruBuf){
     		lruBuf = b;
