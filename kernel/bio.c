@@ -39,7 +39,7 @@ void
 binit(void)
 {
   initlock(&bcache.lock, "bcache");
-	printf("NBUC:%d\n", NBUC);
+
   for(int i = 0; i < NBUC; i++){
   	initlock(&(hashTable[i].lock), "bcache");
   }
@@ -73,7 +73,7 @@ bget(uint dev, uint blockno)
 	// Recycle the least recently used (LRU) unused buffer.
 	struct buf *lruBuf = 0;
 	acquire(&bcache.lock);
-	for(b = bcache.buf; b <= bcache.buf + NBUF; b++){
+	for(b = bcache.buf; b < bcache.buf + NBUF; b++){
     if(b->refcnt == 0) {
     	if (lruBuf == 0){
     		lruBuf = b;
