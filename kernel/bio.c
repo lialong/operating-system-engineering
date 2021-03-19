@@ -61,10 +61,9 @@ bget(uint dev, uint blockno)
 
 	// Is the block already cached?
 	uint64 num = blockno%NBUC;
+	acquire(&(hashTable[num].lock));
 	if (bcache.lock.locked){
 		sleep(&bcache.lock, &(hashTable[num].lock));
-	}else {
-		acquire(&(hashTable[num].lock));
 	}
 	for(b = hashTable[num].head.next, lastBuf = &(hashTable[num].head); b; b = b->next){
 		if (!(b->next)){
