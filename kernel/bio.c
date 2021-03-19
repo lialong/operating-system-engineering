@@ -62,7 +62,7 @@ bget(uint dev, uint blockno)
 	// Is the block already cached?
 	uint64 num = blockno%NBUC;
 	if (bcache.lock.locked){
-		sleep(&bcache.lock, &(hashTable[num].lock))
+		sleep(&bcache.lock, &(hashTable[num].lock));
 	}else {
 		acquire(&(hashTable[num].lock));
 	}
