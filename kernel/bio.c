@@ -61,24 +61,20 @@ bget(uint dev, uint blockno)
 
 	// Is the block already cached?
 	uint64 num = blockno%NBUC;
-	acquire(&(hashTable[num].lock));
-	if (bcache.lock.locked){
-		sleep(&bcache.lock, &(hashTable[num].lock));
-	}
+	acquire(&bcache.lock);
 	for(b = hashTable[num].head.next, lastBuf = &(hashTable[num].head); b; b = b->next){
 		if (!(b->next)){
 			lastBuf = b;
 		}
 		if(b->dev == dev && b->blockno == blockno){
 			b->refcnt++;
-			release(&(hashTable[num].lock));
+			release(&bcache.lock);
 			acquiresleep(&b->lock);
 			return b;
 		}
 	}
 
 	struct buf *lruBuf = 0;
-	acquire(&bcache.lock);
 	for(b = bcache.buf; b < bcache.buf + NBUF; b++){
     if(b->refcnt == 0) {
     	if (lruBuf == 0){
@@ -104,19 +100,15 @@ bget(uint dev, uint blockno)
 			lruBuf->prev = lastBuf;
 		}else {
 			if (oldNum != num){
-				//acquire(&(hashTable[oldNum].lock));
 				lruBuf->prev->next = lruBuf->next;
 				if (lruBuf->next){
 					lruBuf->next->prev = lruBuf->prev;
 				}
-				//release(&(hashTable[oldNum].lock));
 				lastBuf->next = lruBuf;
 				lruBuf->prev = lastBuf;
 			}
 		}
-		wakeup(&bcache.lock);
 	  release(&bcache.lock);
-	  release(&(hashTable[num].lock));
 		acquiresleep(&lruBuf->lock);
 	  return lruBuf;
   }
