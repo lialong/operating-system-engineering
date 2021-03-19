@@ -106,6 +106,7 @@ bget(uint dev, uint blockno)
 				}
 				lastBuf->next = lruBuf;
 				lruBuf->prev = lastBuf;
+				lruBuf->next = 0;
 			}
 		}
 	  release(&bcache.lock);
