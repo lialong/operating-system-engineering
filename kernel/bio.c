@@ -22,7 +22,7 @@
 #include "defs.h"
 #include "fs.h"
 #include "buf.h"
-#define NBUC         NBUF*4/3
+#define NBUC         13
 struct {
   struct spinlock lock;
   struct buf buf[NBUF];
@@ -42,7 +42,7 @@ binit(void)
   initlock(&bcache.lock, "bcache");
 
   for(int i = 0; i < NBUC; i++){
-  	initlock(&(hashTable[i].lock), "bMem");
+  	initlock(&(hashTable[i].lock), "bcache.bucket");
   }
   for(b = bcache.buf; b < bcache.buf+NBUF; b++){
     initsleeplock(&b->lock, "buffer");
