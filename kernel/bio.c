@@ -89,7 +89,7 @@ bget(uint dev, uint blockno)
 
   if (lruBuf){
 	  uint64 oldTick = lruBuf->tick;
-		uint64 oldNum = lruBuf->blockno%NBUC;
+		uint64 oldNum = (lruBuf->blockno)%NBUC;
 	  lruBuf->dev = dev;
 	  lruBuf->blockno = blockno;
 	  lruBuf->valid = 0;
