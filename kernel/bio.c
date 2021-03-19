@@ -50,6 +50,14 @@ binit(void)
   }
 }
 
+void replaceBuffer(struct buf *lruBuf, uint dev, uint blockno, uint ticks){
+	lruBuf->dev = dev;
+	lruBuf->blockno = blockno;
+	lruBuf->valid = 0;
+	lruBuf->refcnt = 1;
+	lruBuf->tick = ticks;
+}
+
 // Look through buffer cache for block on device dev.
 // If not found, allocate a buffer.
 // In either case, return locked buffer.
@@ -61,20 +69,21 @@ bget(uint dev, uint blockno)
 
 	// Is the block already cached?
 	uint64 num = blockno%NBUC;
-	acquire(&bcache.lock);
+	acquire(&(hashTable[num].lock));
 	for(b = hashTable[num].head.next, lastBuf = &(hashTable[num].head); b; b = b->next){
 		if (!(b->next)){
 			lastBuf = b;
 		}
 		if(b->dev == dev && b->blockno == blockno){
 			b->refcnt++;
-			release(&bcache.lock);
+			release(&(hashTable[num].lock));
 			acquiresleep(&b->lock);
 			return b;
 		}
 	}
 
 	struct buf *lruBuf = 0;
+	acquire(&bcache.lock);
 	for(b = bcache.buf; b < bcache.buf + NBUF; b++){
     if(b->refcnt == 0) {
     	if (lruBuf == 0){
@@ -90,26 +99,28 @@ bget(uint dev, uint blockno)
   if (lruBuf){
 	  uint64 oldTick = lruBuf->tick;
 		uint64 oldNum = (lruBuf->blockno)%NBUC;
-	  lruBuf->dev = dev;
-	  lruBuf->blockno = blockno;
-	  lruBuf->valid = 0;
-	  lruBuf->refcnt = 1;
-	  lruBuf->tick = ticks;
 		if(oldTick == 0){
+			replaceBuffer(lruBuf, dev, blockno, ticks);
 			lastBuf->next = lruBuf;
 			lruBuf->prev = lastBuf;
 		}else {
 			if (oldNum != num){
+				acquire(&(hashTable[oldNum].lock));
+				replaceBuffer(lruBuf, dev, blockno, ticks);
 				lruBuf->prev->next = lruBuf->next;
 				if (lruBuf->next){
 					lruBuf->next->prev = lruBuf->prev;
 				}
+				release(&(hashTable[oldNum].lock));
 				lastBuf->next = lruBuf;
 				lruBuf->prev = lastBuf;
 				lruBuf->next = 0;
+			}else {
+				replaceBuffer(lruBuf, dev, blockno, ticks);
 			}
 		}
 	  release(&bcache.lock);
+		release(&(hashTable[num].lock));
 		acquiresleep(&lruBuf->lock);
 	  return lruBuf;
   }
