@@ -148,10 +148,9 @@ brelse(struct buf *b)
 
   releasesleep(&b->lock);
 
-	uint64 num = b->blockno%NBUC;
-	acquire(&(hashTable[num].lock));
+	acquire(&bcache.lock);
   b->refcnt--;
-	release(&(hashTable[num].lock));
+	release(&bcache.lock);
 }
 
 void
