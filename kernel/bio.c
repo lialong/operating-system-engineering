@@ -39,6 +39,7 @@ void
 binit(void)
 {
   struct buf *b;
+
   initlock(&bcache.lock, "bcache");
 
   for(int i = 0; i < NBUC; i++){
@@ -57,10 +58,14 @@ bget(uint dev, uint blockno)
 {
   struct buf *b;
 	struct buf *lastBuf;
-	acquire(&bcache.lock);
+
 	// Is the block already cached?
 	uint64 num = blockno%NBUC;
-	acquire(&(hashTable[num].lock));
+	if (bcache.lock.locked){
+		sleep(&bcache.lock, &(hashTable[num].lock))
+	}else {
+		acquire(&(hashTable[num].lock));
+	}
 	for(b = hashTable[num].head.next, lastBuf = &(hashTable[num].head); b; b = b->next){
 		if (!(b->next)){
 			lastBuf = b;
@@ -74,10 +79,8 @@ bget(uint dev, uint blockno)
 		}
 	}
 
-	// Not cached.
-	// Recycle the least recently used (LRU) unused buffer.
 	struct buf *lruBuf = 0;
-	//acquire(&bcache.lock);
+	acquire(&bcache.lock);
 	for(b = bcache.buf; b < bcache.buf + NBUF; b++){
     if(b->refcnt == 0) {
     	if (lruBuf == 0){
@@ -113,7 +116,8 @@ bget(uint dev, uint blockno)
 				lruBuf->prev = lastBuf;
 			}
 		}
-	  //release(&bcache.lock);
+		wakeup(&bcache.lock);
+	  release(&bcache.lock);
 	  release(&(hashTable[num].lock));
 		release(&bcache.lock);
 		acquiresleep(&lruBuf->lock);
