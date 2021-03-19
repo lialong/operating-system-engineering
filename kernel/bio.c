@@ -117,7 +117,6 @@ bget(uint dev, uint blockno)
 		wakeup(&bcache.lock);
 	  release(&bcache.lock);
 	  release(&(hashTable[num].lock));
-		release(&bcache.lock);
 		acquiresleep(&lruBuf->lock);
 	  return lruBuf;
   }
