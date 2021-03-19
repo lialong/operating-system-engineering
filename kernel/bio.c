@@ -72,7 +72,6 @@ bget(uint dev, uint blockno)
 		if(b->dev == dev && b->blockno == blockno){
 			b->refcnt++;
 			release(&(hashTable[num].lock));
-			release(&bcache.lock);
 			acquiresleep(&b->lock);
 			return b;
 		}
