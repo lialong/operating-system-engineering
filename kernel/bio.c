@@ -160,23 +160,26 @@ brelse(struct buf *b)
 
   releasesleep(&b->lock);
 
-	acquire(&bcache.lock);
+	uint64 num = b->blockno%NBUC;
+	acquire(&(hashTable[num].lock));
   b->refcnt--;
-	release(&bcache.lock);
+	release(&(hashTable[num].lock));
 }
 
 void
 bpin(struct buf *b) {
-  acquire(&bcache.lock);
+	uint64 num = b->blockno%NBUC;
+	acquire(&(hashTable[num].lock));
   b->refcnt++;
-  release(&bcache.lock);
+	release(&(hashTable[num].lock));
 }
 
 void
 bunpin(struct buf *b) {
-  acquire(&bcache.lock);
+	uint64 num = b->blockno%NBUC;
+	acquire(&(hashTable[num].lock));
   b->refcnt--;
-  release(&bcache.lock);
+	release(&(hashTable[num].lock));
 }
 
 
