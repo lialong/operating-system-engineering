@@ -379,6 +379,7 @@ bmap(struct inode *ip, uint bn)
 {
   uint addr, *a;
   struct buf *bp;
+  uint m,n;
 
   if(bn < NDIRECT){
     if((addr = ip->addrs[bn]) == 0)
@@ -396,6 +397,29 @@ bmap(struct inode *ip, uint bn)
     if((addr = a[bn]) == 0){
       a[bn] = addr = balloc(ip->dev);
       log_write(bp);
+    }
+    brelse(bp);
+    return addr;
+  }
+  bn -= NINDIRECT;
+  m = bn/NINDIRECT;
+  n = bn%NINDIRECT;
+
+  if(bn < NDINDIRECT){
+    if((addr = ip->addrs[NDIRECT+1]) == 0)
+      ip->addrs[NDIRECT+1] = addr = balloc(ip->dev);
+    bp = bread(ip->dev, addr);
+    a = (uint*)bp->data;
+    if((addr = a[m]) == 0) {
+      a[m] = addr = balloc(ip->dev);
+      log_write(bp);
+      brelse(bp);
+      bp = bread(ip->dev, addr);
+      a = (uint*)bp->data;
+      if ((addr = a[n]) == 0) {
+        a[n] = addr = balloc(ip->dev);
+        log_write(bp);
+      }
     }
     brelse(bp);
     return addr;
