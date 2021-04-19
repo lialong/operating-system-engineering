@@ -330,6 +330,11 @@ sys_open(void)
         ip = dp;
         ilock(ip);
       }
+      if(i == 10){
+        iunlockput(ip);
+        end_op();
+        return -1;
+      }
     }
   }
 
