@@ -519,9 +519,9 @@ uint64 sys_symlink(void){
   if( (dp = create(path, T_SYMLINK, 0, 0)) == 0){
     goto bad;
   }
-  ilock(dp);
-  writei(dp, 0, (uint64)target, 0, MAXPATH);
-  iupdate(dp);
+  if (writei(dp, 0, (uint64)target, 0, MAXPATH) != MAXPATH){
+    panic("symlink: writei");
+  }
   iunlockput(dp);
   end_op();
   return 0;
