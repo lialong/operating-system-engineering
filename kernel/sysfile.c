@@ -316,7 +316,7 @@ sys_open(void)
     }
     if(!(omode & O_NOFOLLOW)){
       for (int i = 0; i < 10 && ip->type==T_SYMLINK; ++i) {
-        if(readi(ip, 0, path, 0, MAXPATH) == 0){
+        if(readi(ip, 0, (uint64)path, 0, MAXPATH) == 0){
           iunlockput(ip);
           end_op();
           return -1;
