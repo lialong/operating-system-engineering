@@ -58,6 +58,7 @@ initlog(int dev, struct superblock *sb)
     panic("initlog: too big logheader");
 
   initlock(&log.lock, "log");
+  printf("log.start %d\n", sb->logstart);
   log.start = sb->logstart;
   log.size = sb->nlog;
   log.dev = dev;
