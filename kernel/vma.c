@@ -1,6 +1,6 @@
 #include "types.h"
 #include "param.h"
-#include "sleeplock.h"
+#include "spinlock.h"
 #include "file.h"
 #include "vma.h"
 
