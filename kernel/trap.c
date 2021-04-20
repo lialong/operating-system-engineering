@@ -69,38 +69,39 @@ usertrap(void)
     syscall();
   } else if((which_dev = devintr()) != 0){
     // ok
-  } else if(r_scause() == 13 || r_scause() == 15){
+  } else if(r_scause() == 13 || r_scause() == 15) {
     uint64 stval = r_stval();
-    if (stval >= p->sz){
+    if (stval >= p->sz) {
       p->killed = 1;
-    }else {
+    } else {
       uint64 protectTop = PGROUNDDOWN(p->trapframe->sp);
       uint64 stvalTop = PGROUNDUP(stval);
-      if (protectTop != stvalTop){
+      if (protectTop != stvalTop) {
         char *mem = kalloc();
-        if(mem == 0){
+        if (mem == 0) {
           p->killed = 1;
-        }else {
+        } else {
           struct inode *ip = 0;
-          for(int i=0; i < NOFILE; i++){
-            if (p->areaps[i] == 0){
+          for (int i = 0; i < NOFILE; i++) {
+            if (p->areaps[i] == 0) {
               continue;
             }
-            if ( (uint64)(p->areaps[i]->addr) <= stval && stval <= p->areaps[i]->length){
+            if ((uint64) (p->areaps[i]->addr) <= stval && stval <= p->areaps[i]->length) {
               ip = p->areaps[i]->file->ip;
             }
           }
           ilock(ip);
-          readi(ip, 0, (uint64)mem, PGROUNDDOWN(stval - (uint64)(p->areaps[i]->addr)), PGSIZE);
+          readi(ip, 0, (uint64) mem, PGROUNDDOWN(stval - (uint64) (p->areaps[i]->addr)), PGSIZE);
           iunlockput(ip);
-          if(mappages(p->pagetable, PGROUNDDOWN(stval), PGSIZE, (uint64)mem, PTE_W|PTE_X|PTE_R|PTE_U) != 0){
+          if (mappages(p->pagetable, PGROUNDDOWN(stval), PGSIZE, (uint64) mem, PTE_W | PTE_X | PTE_R | PTE_U) != 0) {
             p->killed = 1;
           }
         }
-      }else {
+      } else {
         p->killed = 1;
       }
-    } else {
+    }
+  }else {
     printf("usertrap(): unexpected scause %p pid=%d\n", r_scause(), p->pid);
     printf("            sepc=%p stval=%p\n", r_sepc(), r_stval());
     p->killed = 1;
