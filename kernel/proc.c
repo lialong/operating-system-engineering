@@ -260,6 +260,12 @@ growproc(int n)
   return 0;
 }
 
+int lazy_grow_proc(int n){
+  struct proc *p = myproc();
+  p->sz = p->sz + n;
+  return 0;
+}
+
 // Create a new process, copying the parent.
 // Sets up child kernel stack to return as if from fork() system call.
 int

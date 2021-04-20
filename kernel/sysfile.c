@@ -15,6 +15,7 @@
 #include "sleeplock.h"
 #include "file.h"
 #include "fcntl.h"
+#include "vma.h"
 
 // Fetch the nth word-sized system call argument as a file descriptor
 // and return both the descriptor and the corresponding struct file.
@@ -486,7 +487,42 @@ sys_pipe(void)
 }
 
 uint64 sys_mmap(void){
-  return 0xffffffffffffffff;
+  struct vm_area_struct *vmap;
+  struct proc *pr;
+  int length, prot, flags, fd;
+  uint64 sz;
+
+  if (length = argint(2, &length) < 0 || prot = argint(3, &prot) < 0 || flags = argint(4, &flags) < 0 || fd = argint(5, &fd) < 0){
+    return 0xffffffffffffffff;
+  }
+
+  if ( (vmap = vma_alloc()) == 0){
+    return 0xffffffffffffffff;
+  }
+
+  pr = myproc();
+  acquire(pr->lock);
+  for (int i=0; i < NOFILE; i++){
+    if(pr->areaps[i] == 0){
+      pr->areaps[i] = vmap;
+      release(pr->lock);
+      break;
+    }
+  }
+  if (i == NOFILE){
+    return 0xffffffffffffffff;
+  }
+
+  sz = pr->sz;
+  if(lazy_grow_proc(length) < 0)
+    return 0xffffffffffffffff;
+  vmap->addr = sz;
+  vmap->length = length;
+  vmap->prot = (prot & PROT_READ) | (prot & PROT_WRITE);
+  vmap->flags = flags;
+  vmap->file = pr->ofile[fd];
+  filedup(pr->ofile[fd]);
+  return sz;
 }
 
 uint64 sys_munmap(void){
