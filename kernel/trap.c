@@ -91,9 +91,9 @@ usertrap(void)
             }
           }
           if (vmap != 0){
-            ilock(ip);
+            ilock(vmap->file->ip);
             readi(vmap->file->ip, 0, (uint64) mem, PGROUNDDOWN(stval - (uint64) (vmap->addr)), PGSIZE);
-            iunlockput(ip);
+            iunlockput(vmap->file->ip);
             if (mappages(p->pagetable, PGROUNDDOWN(stval), PGSIZE, (uint64) mem, PTE_W | PTE_X | PTE_R | PTE_U) != 0) {
               p->killed = 1;
             }
