@@ -492,7 +492,7 @@ uint64 sys_mmap(void){
   int length, prot, flags, fd, i;
   uint64 sz;
 
-  if (length = argint(2, &length) < 0 || (prot = argint(3, &prot)) < 0 || (flags = argint(4, &flags)) < 0 || (fd = argint(5, &fd)) < 0){
+  if (length = argint(2, &length)) < 0 || (prot = argint(3, &prot)) < 0 || (flags = argint(4, &flags)) < 0 || (fd = argint(5, &fd)) < 0){
     return 0xffffffffffffffff;
   }
 
