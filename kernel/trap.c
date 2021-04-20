@@ -84,15 +84,17 @@ usertrap(void)
           p->killed = 1;
         } else {
           struct vm_area_struct *vmap;
-          for (int i = 0; i < NOFILE; i++) {
+          int i;
+          for (i = 0; i < NOFILE; i++) {
             if (p->areaps[i] == 0) {
               continue;
             }
             if ((uint64) (p->areaps[i]->addr) <= stval && stval <= p->areaps[i]->length) {
               vmap = p->areaps[i];
+              break;
             }
           }
-          if (vmap != 0){
+          if (i != NOFILE){
             ilock(vmap->file->ip);
             readi(vmap->file->ip, 0, (uint64) mem, PGROUNDDOWN(stval - (uint64) (vmap->addr)), PGSIZE);
             iunlockput(vmap->file->ip);
