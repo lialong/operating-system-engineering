@@ -489,10 +489,10 @@ sys_pipe(void)
 uint64 sys_mmap(void){
   struct vm_area_struct *vmap;
   struct proc *pr;
-  int length, prot, flags, fd;
+  int length, prot, flags, fd, i;
   uint64 sz;
 
-  if (length = argint(2, &length) < 0 || prot = argint(3, &prot) < 0 || flags = argint(4, &flags) < 0 || fd = argint(5, &fd) < 0){
+  if (length = argint(2, &length) < 0 || (prot = argint(3, &prot)) < 0 || (flags = argint(4, &flags)) < 0 || (fd = argint(5, &fd)) < 0){
     return 0xffffffffffffffff;
   }
 
@@ -501,11 +501,11 @@ uint64 sys_mmap(void){
   }
 
   pr = myproc();
-  acquire(pr->lock);
-  for (int i=0; i < NOFILE; i++){
+  acquire(&pr->lock);
+  for (i=0; i < NOFILE; i++){
     if(pr->areaps[i] == 0){
       pr->areaps[i] = vmap;
-      release(pr->lock);
+      release(&pr->lock);
       break;
     }
   }
@@ -516,7 +516,7 @@ uint64 sys_mmap(void){
   sz = pr->sz;
   if(lazy_grow_proc(length) < 0)
     return 0xffffffffffffffff;
-  vmap->addr = sz;
+  vmap->addr = (char *)sz;
   vmap->length = length;
   vmap->prot = (prot & PROT_READ) | (prot & PROT_WRITE);
   vmap->flags = flags;
