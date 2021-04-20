@@ -81,19 +81,23 @@ usertrap(void)
         if (mem == 0) {
           p->killed = 1;
         } else {
-          struct inode *ip = 0;
+          struct vm_area_struct *vmap;
           for (int i = 0; i < NOFILE; i++) {
             if (p->areaps[i] == 0) {
               continue;
             }
             if ((uint64) (p->areaps[i]->addr) <= stval && stval <= p->areaps[i]->length) {
-              ip = p->areaps[i]->file->ip;
+              vmap = p->areaps[i];
             }
           }
-          ilock(ip);
-          readi(ip, 0, (uint64) mem, PGROUNDDOWN(stval - (uint64) (p->areaps[i]->addr)), PGSIZE);
-          iunlockput(ip);
-          if (mappages(p->pagetable, PGROUNDDOWN(stval), PGSIZE, (uint64) mem, PTE_W | PTE_X | PTE_R | PTE_U) != 0) {
+          if (vmap != 0){
+            ilock(ip);
+            readi(vmap->file->ip, 0, (uint64) mem, PGROUNDDOWN(stval - (uint64) (vmap->addr)), PGSIZE);
+            iunlockput(ip);
+            if (mappages(p->pagetable, PGROUNDDOWN(stval), PGSIZE, (uint64) mem, PTE_W | PTE_X | PTE_R | PTE_U) != 0) {
+              p->killed = 1;
+            }
+          }else {
             p->killed = 1;
           }
         }
