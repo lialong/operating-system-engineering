@@ -489,6 +489,6 @@ uint64 sys_mmap(void){
   return 0xffffffffffffffff;
 }
 
-uint64 sys_unmap(void){
+uint64 sys_munmap(void){
   return -1;
 }
