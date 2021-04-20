@@ -79,31 +79,33 @@ usertrap(void)
       uint64 protectTop = PGROUNDDOWN(p->trapframe->sp);
       uint64 stvalTop = PGROUNDUP(stval);
       if (protectTop != stvalTop) {
-        char *mem = kalloc();
-        if (mem == 0) {
-          p->killed = 1;
-        } else {
-          struct vm_area_struct *vmap;
-          int i;
-          for (i = 0; i < NOFILE; i++) {
-            if (p->areaps[i] == 0) {
-              continue;
-            }
-            if ((uint64) (p->areaps[i]->addr) <= stval && stval <= p->areaps[i]->length) {
-              vmap = p->areaps[i];
-              break;
-            }
+        struct vm_area_struct *vmap;
+        int i;
+        uint64 addr;
+        for (i = 0; i < NOFILE; i++) {
+          if (p->areaps[i] == 0) {
+            continue;
           }
-          if (i != NOFILE){
+          addr = (uint64) (p->areaps[i]->addr);
+          if ( addr <= stval && stval <= addr + p->areaps[i]->length) {
+            vmap = p->areaps[i];
+            break;
+          }
+        }
+        if (i != NOFILE){
+          char *mem = kalloc();
+          if (mem == 0) {
+            p->killed = 1;
+          } else {
             ilock(vmap->file->ip);
-            readi(vmap->file->ip, 0, (uint64) mem, PGROUNDDOWN(stval - (uint64) (vmap->addr)), PGSIZE);
+            readi(vmap->file->ip, 0, (uint64) mem, PGROUNDDOWN(stval - addr), PGSIZE);
             iunlockput(vmap->file->ip);
             if (mappages(p->pagetable, PGROUNDDOWN(stval), PGSIZE, (uint64) mem, PTE_W | PTE_X | PTE_R | PTE_U) != 0) {
               p->killed = 1;
             }
-          }else {
-            p->killed = 1;
           }
+        }else {
+          p->killed = 1;
         }
       } else {
         p->killed = 1;
