@@ -293,8 +293,7 @@ fork(void)
   }
   for(int i=0; i < NOFILE; i++){
     if (p->areaps[i]){
-      np->areaps[i] = p->areaps[i];
-      filedup(p->areaps[i]->file);
+      np->areaps[i] = filedup(p->areaps[i]->file);
     }
   }
 
@@ -381,7 +380,6 @@ exit(int status)
         iunlock(vmap->file->ip);
         end_op();
       }
-      fileclose(vmap->file);
       p->areaps[i] = 0;
     }
   }
