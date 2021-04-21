@@ -293,7 +293,12 @@ fork(void)
   }
   for(i=0; i < NOFILE; i++){
     if (p->areaps[i]){
-      np->areaps[i] = p->areaps[i];
+      np->areaps[i] = vma_alloc();
+      np->areaps[i]->addr = p->areaps[i]->addr;
+      np->areaps[i]->length = p->areaps[i]->length;
+      np->areaps[i]->prot = p->areaps[i]->prot;
+      np->areaps[i]->flags = p->areaps[i]->flags;
+      np->areaps[i]->file = p->areaps[i]->file;
       filedup(p->areaps[i]->file);
     }
   }
