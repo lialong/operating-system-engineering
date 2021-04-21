@@ -5,6 +5,9 @@
 #include "spinlock.h"
 #include "proc.h"
 #include "defs.h"
+#include "file.h"
+#include "vma.h"
+#include "fcntl.h"
 
 struct cpu cpus[NCPU];
 
@@ -286,6 +289,13 @@ fork(void)
     release(&np->lock);
     return -1;
   }
+  for(int i=0; i < NOFILE; i++){
+    if (p->areaps[i]){
+      np->areaps[i] = p->areaps[i];
+      filedup(p->areaps[i]->file);
+    }
+  }
+
   np->sz = p->sz;
 
   np->parent = p;
@@ -356,6 +366,21 @@ exit(int status)
       struct file *f = p->ofile[fd];
       fileclose(f);
       p->ofile[fd] = 0;
+    }
+  }
+
+  for(int i = 0; i < NOFILE; i++){
+    if(p->areaps[i]){
+      struct vm_area_struct *vmap = p->areaps[i];
+      if (vmap->prot & PROT_WRITE && vmap->flags == MAP_SHARED){
+        begin_op();
+        ilock(vmap->file->ip);
+        writei(vmap->file->ip, 1, (uint64)vmap->addr, 0, vmap->length);
+        iunlock(vmap->file->ip);
+        end_op();
+      }
+      fileclose(vmap->file);
+      p->areaps[i] = 0;
     }
   }
 
