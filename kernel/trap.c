@@ -95,7 +95,7 @@ usertrap(void)
         }
         if (i != NOFILE){
           char *mem = kalloc();
-          int flags = PTE_U;
+          int prot = PTE_U;
           if (mem == 0) {
             p->killed = 1;
           } else {
@@ -103,13 +103,13 @@ usertrap(void)
             ilock(vmap->file->ip);
             readi(vmap->file->ip, 0, (uint64) mem, PGROUNDDOWN(stval - addr), PGSIZE);
             iunlock(vmap->file->ip);
-            if (vmap->flags & PROT_READ){
-              flags |= PTE_R;
+            if (vmap->prot & PROT_READ){
+              prot |= PTE_R;
             }
             if (vmap->flags & PROT_WRITE){
-              flags |= PTE_W;
+              prot |= PTE_W;
             }
-            if (mappages(p->pagetable, PGROUNDDOWN(stval), PGSIZE, (uint64) mem, flags) != 0) {
+            if (mappages(p->pagetable, PGROUNDDOWN(stval), PGSIZE, (uint64) mem, prot) != 0) {
               kfree(mem);
               p->killed = 1;
             }
