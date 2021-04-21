@@ -552,6 +552,9 @@ uint64 sys_munmap(void){
       continue;
     }
     if ( (uint64)pr->areaps[i]->addr == startAddr){
+      if (length >= pr->areaps[i]->length) {
+        length = pr->areaps[i]->length;
+      }
       if (pr->areaps[i]->prot & PROT_WRITE && pr->areaps[i]->flags==MAP_SHARED){
         begin_op();
         ilock(pr->areaps[i]->file->ip);
@@ -559,8 +562,7 @@ uint64 sys_munmap(void){
         iunlock(pr->areaps[i]->file->ip);
         end_op();
       }
-      if (length >= pr->areaps[i]->length){
-        length = pr->areaps[i]->length;
+      if (length == pr->areaps[i]->length){
         growproc(-length);
         fileclose(pr->areaps[i]->file);
         vma_free(pr->areaps[i]);
