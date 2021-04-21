@@ -529,7 +529,7 @@ uint64 sys_mmap(void){
     if (!(prot & PROT_WRITE))
       return 0xffffffffffffffff;
   }else {
-    if (prot & PROT_WRITE)
+    if (prot & PROT_WRITE && flags==MAP_SHARED)
       return 0xffffffffffffffff;
   }
   vmap->prot = (prot & PROT_READ) | (prot & PROT_WRITE);
