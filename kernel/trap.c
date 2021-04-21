@@ -9,6 +9,7 @@
 #include "defs.h"
 #include "file.h"
 #include "vma.h"
+#include "fcntl.h"
 
 struct spinlock tickslock;
 uint ticks;
@@ -94,6 +95,7 @@ usertrap(void)
         }
         if (i != NOFILE){
           char *mem = kalloc();
+          int flags = PTE_U;
           if (mem == 0) {
             p->killed = 1;
           } else {
@@ -101,7 +103,13 @@ usertrap(void)
             ilock(vmap->file->ip);
             readi(vmap->file->ip, 0, (uint64) mem, PGROUNDDOWN(stval - addr), PGSIZE);
             iunlock(vmap->file->ip);
-            if (mappages(p->pagetable, PGROUNDDOWN(stval), PGSIZE, (uint64) mem, PTE_W | PTE_X | PTE_R | PTE_U) != 0) {
+            if (vmap->flags & PROT_READ){
+              flags |= PTE_R;
+            }
+            if (vmap->flags & PROT_WRITE){
+              flags |= PTE_W;
+            }
+            if (mappages(p->pagetable, PGROUNDDOWN(stval), PGSIZE, (uint64) mem, flags) != 0) {
               kfree(mem);
               p->killed = 1;
             }
