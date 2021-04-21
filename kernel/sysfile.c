@@ -518,17 +518,11 @@ uint64 sys_mmap(void){
     return 0xffffffffffffffff;
   vmap->addr = (char *)sz;
   vmap->length = length;
-  if(pr->ofile[fd]->readable){
-    if (!(prot & PROT_READ))
-      return 0xffffffffffffffff;
-  }else {
+  if(!pr->ofile[fd]->readable){
     if (prot & PROT_READ)
       return 0xffffffffffffffff;
   }
-  if(pr->ofile[fd]->writable){
-    if (!(prot & PROT_WRITE))
-      return 0xffffffffffffffff;
-  }else {
+  if(!pr->ofile[fd]->writable){
     if (prot & PROT_WRITE && flags==MAP_SHARED)
       return 0xffffffffffffffff;
   }
