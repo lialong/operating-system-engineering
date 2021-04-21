@@ -545,6 +545,7 @@ uint64 sys_munmap(void){
         fileclose(pr->areaps[i]->file);
         vma_free(pr->areaps[i]);
         pr->areaps[i] = 0;
+        return 0;
       }else {
         return -1;
       }
