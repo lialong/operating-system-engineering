@@ -97,6 +97,7 @@ usertrap(void)
           if (mem == 0) {
             p->killed = 1;
           } else {
+            memset(mem, 0, PGSIZE);
             ilock(vmap->file->ip);
             readi(vmap->file->ip, 0, (uint64) mem, PGROUNDDOWN(stval - addr), PGSIZE);
             iunlock(vmap->file->ip);
