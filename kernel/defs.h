@@ -188,7 +188,7 @@ void            virtio_disk_intr(void);
 // vma.c
 void            vma_init(void);
 struct vm_area_struct* vma_alloc(void);
-int             vma_free(struct vm_area_struct *);
+void            vma_free(struct vm_area_struct *);
 
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))
