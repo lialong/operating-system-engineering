@@ -554,7 +554,7 @@ uint64 sys_munmap(void){
     if ( (uint64)pr->areaps[i]->addr == startAddr){
       if (pr->areaps[i]->prot & PROT_WRITE){
         ilock(pr->areaps[i]->file->ip);
-        writei(pr->areaps[i]->file->ip, 1, pr->areaps[i]->addr, 0, length);
+        writei(pr->areaps[i]->file->ip, 1, (uint64)pr->areaps[i]->addr, 0, length);
         iunlock(pr->areaps[i]->file->ip);
       }
       if (length >= pr->areaps[i]->length){
