@@ -495,6 +495,14 @@ uint64 sys_mmap(void){
   if ( argint(1, &length) < 0 || argint(2, &prot) < 0 || argint(3, &flags) < 0 || argint(4, &fd) < 0){
     return 0xffffffffffffffff;
   }
+  if(!pr->ofile[fd]->readable){
+    if (prot & PROT_READ)
+      return 0xffffffffffffffff;
+  }
+  if(!pr->ofile[fd]->writable){
+    if (prot & PROT_WRITE && flags==MAP_SHARED)
+      return 0xffffffffffffffff;
+  }
 
   if ( (vmap = vma_alloc()) == 0){
     return 0xffffffffffffffff;
@@ -518,14 +526,6 @@ uint64 sys_mmap(void){
     return 0xffffffffffffffff;
   vmap->addr = (char *)sz;
   vmap->length = length;
-  if(!pr->ofile[fd]->readable){
-    if (prot & PROT_READ)
-      return 0xffffffffffffffff;
-  }
-  if(!pr->ofile[fd]->writable){
-    if (prot & PROT_WRITE && flags==MAP_SHARED)
-      return 0xffffffffffffffff;
-  }
   vmap->prot = (prot & PROT_READ) | (prot & PROT_WRITE);
   vmap->flags = flags;
   vmap->file = pr->ofile[fd];
