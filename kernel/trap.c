@@ -88,7 +88,7 @@ usertrap(void)
             continue;
           }
           addr = (uint64) (p->areaps[i]->addr);
-          if ( addr <= stval && stval <= addr + p->areaps[i]->length) {
+          if ( addr <= stval && stval < addr + p->areaps[i]->length) {
             vmap = p->areaps[i];
             break;
           }
