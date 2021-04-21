@@ -537,7 +537,7 @@ uint64 sys_munmap(void){
     if (pr->areaps[i] == 0) {
       continue;
     }
-    if ( (int)pr->areaps[i]->addr == startAddr){
+    if ( (uint64)pr->areaps[i]->addr == startAddr){
       if (length >= pr->areaps[i]->length){
         length = pr->areaps[i]->length;
         pr->sz -= length;
