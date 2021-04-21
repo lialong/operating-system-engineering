@@ -537,11 +537,11 @@ uint64 sys_munmap(void){
     if (pr->areaps[i] == 0) {
       continue;
     }
-    if (pr->areaps[i]->addr == startAddr){
+    if ( (int)pr->areaps[i]->addr == startAddr){
       if (length >= pr->areaps[i]->length){
         length = pr->areaps[i]->length;
         pr->sz -= length;
-        uvmunmap(pr->pagetable, pr->areaps[i]->addr, length/PGSIZE, 1);
+        uvmunmap(pr->pagetable, (uint64)pr->areaps[i]->addr, length/PGSIZE, 1);
         fileclose(pr->areaps[i]->file);
         vma_free(pr->areaps[i]);
         pr->areaps[i] = 0;
