@@ -293,7 +293,8 @@ fork(void)
   }
   for(int i=0; i < NOFILE; i++){
     if (p->areaps[i]){
-      np->areaps[i]->file = filedup(p->areaps[i]->file);
+      np->areaps[i] = p->areaps[i];
+      filedup(p->areaps[i]->file);
     }
   }
 
