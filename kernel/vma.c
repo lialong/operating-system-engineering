@@ -41,7 +41,7 @@ vma_free(struct vm_area_struct *vmapToFree)
   int i;
   for(i=0; i < NOFILE; i++){
     if(vma_table.areas + i == vmapToFree){
-      vma_table[i] = 0;
+      vma_table.areas[i] = 0;
       break;
     }
   }
