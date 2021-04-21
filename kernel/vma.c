@@ -36,7 +36,7 @@ vma_alloc(void)
 }
 
 void
-vma_free(struct vm_area_struct *vmapToFree)
+vma_free(struct vm_area_struct *vmap)
 {
-  vmapToFree->file = 0;
+  vmap->file = 0;
 }

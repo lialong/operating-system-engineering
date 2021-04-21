@@ -374,6 +374,7 @@ exit(int status)
   for(int i = 0; i < NOFILE; i++){
     if(p->areaps[i]){
       struct vm_area_struct *vmap = p->areaps[i];
+      uvmunmap(p->pagetable, (uint64)vmap->addr, vmap->length/PGSIZE, 1);
       if (vmap->prot & PROT_WRITE && vmap->flags == MAP_SHARED){
         begin_op();
         ilock(vmap->file->ip);
@@ -381,6 +382,8 @@ exit(int status)
         iunlock(vmap->file->ip);
         end_op();
       }
+      fileclose(vmap->file);
+      vma_free(vmap);
       p->areaps[i] = 0;
     }
   }
