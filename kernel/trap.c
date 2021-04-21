@@ -101,6 +101,7 @@ usertrap(void)
             readi(vmap->file->ip, 0, (uint64) mem, PGROUNDDOWN(stval - addr), PGSIZE);
             iunlockput(vmap->file->ip);
             if (mappages(p->pagetable, PGROUNDDOWN(stval), PGSIZE, (uint64) mem, PTE_W | PTE_X | PTE_R | PTE_U) != 0) {
+              kfree(mem);
               p->killed = 1;
             }
           }
