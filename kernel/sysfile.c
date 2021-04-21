@@ -495,6 +495,7 @@ uint64 sys_mmap(void){
   if ( argint(1, &length) < 0 || argint(2, &prot) < 0 || argint(3, &flags) < 0 || argint(4, &fd) < 0){
     return 0xffffffffffffffff;
   }
+  pr = myproc();
   if(!pr->ofile[fd]->readable){
     if (prot & PROT_READ)
       return 0xffffffffffffffff;
@@ -508,7 +509,6 @@ uint64 sys_mmap(void){
     return 0xffffffffffffffff;
   }
 
-  pr = myproc();
   acquire(&pr->lock);
   for (i=0; i < NOFILE; i++){
     if(pr->areaps[i] == 0){
