@@ -560,7 +560,10 @@ uint64 sys_munmap(void){
         pr->areaps[i] = 0;
         return 0;
       }else {
-        return -1;
+        uvmunmap(pr->pagetable, pr->areaps[i]->addr, length/PGSIZE, 1);
+        pr->areaps[i]->addr += length;
+        pr->areaps[i]->length -= length;
+        return 0;
       }
     }
   }
