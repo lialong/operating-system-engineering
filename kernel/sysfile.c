@@ -556,14 +556,13 @@ uint64 sys_munmap(void){
         iunlock(pr->areaps[i]->file->ip);
         end_op();
       }
+      uvmunmap(pr->pagetable, (uint64)startAddr, length/PGSIZE, 1);
       if (length == pr->areaps[i]->length){
-        growproc(-length);
         fileclose(pr->areaps[i]->file);
         vma_free(pr->areaps[i]);
         pr->areaps[i] = 0;
         return 0;
       }else {
-        uvmunmap(pr->pagetable, (uint64)startAddr, length/PGSIZE, 1);
         pr->areaps[i]->addr += length;
         pr->areaps[i]->length -= length;
         return 0;
