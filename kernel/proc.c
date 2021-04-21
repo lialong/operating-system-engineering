@@ -381,7 +381,6 @@ exit(int status)
         iunlock(vmap->file->ip);
         end_op();
       }
-      fileclose(vmap->file);
       p->areaps[i] = 0;
     }
   }
