@@ -554,8 +554,8 @@ uint64 sys_munmap(void){
     if ( (uint64)pr->areaps[i]->addr == startAddr){
       if (length >= pr->areaps[i]->length){
         length = pr->areaps[i]->length;
+        uvmdealloc(pr->pagetable, pr->sz, pr->sz - length);
         pr->sz -= length;
-        uvmunmap(pr->pagetable, (uint64)pr->areaps[i]->addr, length/PGSIZE, 1);
         fileclose(pr->areaps[i]->file);
         vma_free(pr->areaps[i]);
         pr->areaps[i] = 0;
