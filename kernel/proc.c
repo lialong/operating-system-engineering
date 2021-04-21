@@ -377,7 +377,7 @@ exit(int status)
         iunlock(vmap->file->ip);
         end_op();
       }
-      //fileclose(vmap->file);
+      fileclose(vmap->file);
       vma_free(vmap);
       p->areaps[i] = 0;
     }
