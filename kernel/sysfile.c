@@ -518,6 +518,20 @@ uint64 sys_mmap(void){
     return 0xffffffffffffffff;
   vmap->addr = (char *)sz;
   vmap->length = length;
+  if(pr->ofile[fd]->readable){
+    if (!(prot & PROT_READ))
+      return 0xffffffffffffffff;
+  }else {
+    if (prot & PROT_READ)
+      return 0xffffffffffffffff;
+  }
+  if(pr->ofile[fd]->writable){
+    if (!(prot & PROT_WRITE))
+      return 0xffffffffffffffff;
+  }else {
+    if (prot & PROT_WRITE)
+      return 0xffffffffffffffff;
+  }
   vmap->prot = (prot & PROT_READ) | (prot & PROT_WRITE);
   vmap->flags = flags;
   vmap->file = pr->ofile[fd];
