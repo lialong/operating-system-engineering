@@ -291,7 +291,7 @@ fork(void)
     release(&np->lock);
     return -1;
   }
-  for(int i=0; i < NOFILE; i++){
+  for(i=0; i < NOFILE; i++){
     if (p->areaps[i]){
       np->areaps[i] = p->areaps[i];
       filedup(p->areaps[i]->file);
