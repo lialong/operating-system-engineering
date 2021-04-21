@@ -554,7 +554,7 @@ uint64 sys_munmap(void){
     if ( (uint64)pr->areaps[i]->addr == startAddr){
       if (length >= pr->areaps[i]->length){
         length = pr->areaps[i]->length;
-        pr->sz = growproc(-length);
+        growproc(-length);
         fileclose(pr->areaps[i]->file);
         vma_free(pr->areaps[i]);
         pr->areaps[i] = 0;
