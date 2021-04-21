@@ -106,7 +106,7 @@ usertrap(void)
             if (vmap->prot & PROT_READ){
               prot |= PTE_R;
             }
-            if (vmap->flags & PROT_WRITE){
+            if (vmap->prot & PROT_WRITE){
               prot |= PTE_W;
             }
             if (mappages(p->pagetable, PGROUNDDOWN(stval), PGSIZE, (uint64) mem, prot) != 0) {
