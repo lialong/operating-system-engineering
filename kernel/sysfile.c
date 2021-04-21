@@ -526,5 +526,29 @@ uint64 sys_mmap(void){
 }
 
 uint64 sys_munmap(void){
+  struct proc *pr = myproc();
+  int startAddr, length;
+
+  if ( argint(0, &startAddr) < 0 || argint(1, &length) < 0){
+    return -1;
+  }
+
+  for(int i=0; i < NOFILE; i++){
+    if (pr->areaps[i] == 0) {
+      continue;
+    }
+    if (pr->areaps[i]->addr == startAddr){
+      if (length >= pr->areaps[i]->length){
+        length = pr->areaps[i]->length;
+        pr->sz -= length;
+        uvmunmap(pr->pagetable, pr->areaps[i]->addr, length/PGSIZE, 1);
+        fileclose(pr->areaps[i]->file);
+        vma_free(pr->areaps[i]);
+        pr->areaps[i] = 0;
+      }else {
+        return -1;
+      }
+    }
+  }
   return -1;
 }

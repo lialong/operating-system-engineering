@@ -35,7 +35,14 @@ vma_alloc(void)
   return 0;
 }
 
-void
-vma_free(struct vm_area_struct *vmap)
+int
+vma_free(struct vm_area_struct *vmapToFree)
 {
+  for(int i=0; i < NOFILE; i++){
+    if(vma_table[i] == vmapToFree){
+      vma_table[i] = 0;
+      break;
+    }
+  }
+  return i != NOFILE;
 }
