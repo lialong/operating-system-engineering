@@ -26,7 +26,7 @@ vma_alloc(void)
 
   acquire(&vma_table.lock);
   for(vmap = vma_table.areas; vmap < vma_table.areas + NOFILE; vmap++){
-    if(vmap->addr == 0){
+    if(vmap->file == 0){
       release(&vma_table.lock);
       return vmap;
     }
@@ -35,15 +35,8 @@ vma_alloc(void)
   return 0;
 }
 
-int
+void
 vma_free(struct vm_area_struct *vmapToFree)
 {
-  int i;
-  for(i=0; i < NOFILE; i++){
-    if(vma_table.areas + i == vmapToFree){
-      vma_table.areas[i].addr = 0;
-      break;
-    }
-  }
-  return i != NOFILE;
+  vmapToFree->file = 0;
 }
