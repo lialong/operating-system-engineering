@@ -552,10 +552,10 @@ uint64 sys_munmap(void){
       continue;
     }
     if ( (uint64)pr->areaps[i]->addr == startAddr){
-      if (pr->areaps[i]->prot & PROT_WRITE){
+      if (pr->areaps[i]->prot & PROT_WRITE && pr->areaps[i]->flags==MAP_SHARED){
         begin_op();
         ilock(pr->areaps[i]->file->ip);
-        writei(pr->areaps[i]->file->ip, 1, (uint64)pr->areaps[i]->addr, 0, length);
+        writei(pr->areaps[i]->file->ip, 1, (uint64)startAddr, 0, length);
         iunlock(pr->areaps[i]->file->ip);
         end_op();
       }
@@ -567,7 +567,7 @@ uint64 sys_munmap(void){
         pr->areaps[i] = 0;
         return 0;
       }else {
-        uvmunmap(pr->pagetable, (uint64)pr->areaps[i]->addr, length/PGSIZE, 1);
+        uvmunmap(pr->pagetable, (uint64)startAddr, length/PGSIZE, 1);
         pr->areaps[i]->addr += length;
         pr->areaps[i]->length -= length;
         return 0;
