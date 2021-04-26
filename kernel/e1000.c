@@ -107,7 +107,7 @@ e1000_transmit(struct mbuf *m)
   int i = tail%RX_RING_SIZE;
   if ((tx_ring[i].status & 1) != E1000_TXD_STAT_DD)
     return -1;
-  if (!tx_mbufs[i])
+  if (tx_mbufs[i])
     mbuffree(tx_mbufs[i]);
   tx_mbufs[i] = m;
   tx_ring[i].addr = (uint64)m->head;
