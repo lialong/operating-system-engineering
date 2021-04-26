@@ -112,7 +112,7 @@ e1000_transmit(struct mbuf *m)
   tx_mbufs[i] = m;
   tx_ring[i].addr = (uint64)m->head;
   tx_ring[i].length = m->len;
-  tx_ring[i].cmd = 8;
+  tx_ring[i].cmd = 9;
 
   regs[E1000_TDT] = (i+1)%TX_RING_SIZE;
   release(&e1000_lock);
