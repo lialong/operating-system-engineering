@@ -103,14 +103,14 @@ e1000_transmit(struct mbuf *m)
   // a pointer so that it can be freed after sending.
   //
   acquire(&e1000_lock);
-  uint32 tail = *regs[E1000_TDT];
+  uint32 tail = regs[E1000_TDT];
   int i = tail%RX_RING_SIZE;
-  if (tx_ring[i].status & 1 != E1000_TXD_STAT_DD)
+  if ((tx_ring[i].status & 1) != E1000_TXD_STAT_DD)
     return -1;
   if (!tx_mbufs[i])
     mbuffree(tx_mbufs[i]);
   tx_mbufs[i] = m;
-  tx_ring[i].addr = m->head;
+  tx_ring[i].addr = (uint64)m->head;
   tx_ring[i].length = m->len;
   tx_ring[i].cmd = 8;
 
@@ -129,13 +129,13 @@ e1000_recv(void)
   // Create and deliver an mbuf for each packet (using net_rx()).
   //
   acquire(&e1000_lock);
-  uint32 tail = *regs[E1000_RDT];
+  uint32 tail = regs[E1000_RDT];
   int i = (tail+1)%RX_RING_SIZE;
-  while(rx_ring[i].status & 1 == E1000_RXD_STAT_DD){
-    rx_mbufs[i].len = rx_ring[i].length;
+  while((rx_ring[i].status & 1) == E1000_RXD_STAT_DD){
+    rx_mbufs[i]->len = rx_ring[i].length;
     net_rx(rx_mbufs[i]);
     rx_mbufs[i] = mbufalloc(0);
-    rx_ring[i].addr = rx_mbufs[i]->head;
+    rx_ring[i].addr = (uint64)rx_mbufs[i]->head;
     rx_ring[i].status = 0;
     i = (i+1)%RX_RING_SIZE;
   }
