@@ -20,7 +20,6 @@ static struct mbuf *rx_mbufs[RX_RING_SIZE];
 static volatile uint32 *regs;
 
 struct spinlock e1000_lock;
-struct spinlock e1000_lock_read;
 
 // called by pci_init().
 // xregs is the memory address at which the
@@ -129,19 +128,17 @@ e1000_recv(void)
   // Check for packets that have arrived from the e1000
   // Create and deliver an mbuf for each packet (using net_rx()).
   //
-  acquire(&e1000_lock_read);
   uint32 tail = regs[E1000_RDT];
   int i = (tail+1)%RX_RING_SIZE;
-  if((rx_ring[i].status & 1) != E1000_RXD_STAT_DD)
-    return -1;
-  rx_mbufs[i]->len = rx_ring[i].length;
-  net_rx(rx_mbufs[i]);
-  rx_mbufs[i] = mbufalloc(0);
-  rx_ring[i].addr = (uint64)rx_mbufs[i]->head;
-  rx_ring[i].status = 0;
-  i = (i+1)%RX_RING_SIZE;
+  while((rx_ring[i].status & 1) == E1000_RXD_STAT_DD){
+    rx_mbufs[i]->len = rx_ring[i].length;
+    net_rx(rx_mbufs[i]);
+    rx_mbufs[i] = mbufalloc(0);
+    rx_ring[i].addr = (uint64)rx_mbufs[i]->head;
+    rx_ring[i].status = 0;
+    i = (i+1)%RX_RING_SIZE;
+  }
   regs[E1000_RDT] = i-1;
-  release(&e1000_lock_read);
 }
 
 void
