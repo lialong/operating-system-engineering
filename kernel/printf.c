@@ -142,7 +142,7 @@ void backtrace(){
   while((uint64)fp != up){
     fp = (uint64*)((uint64)fp - 16);
     ra = (uint64*)((uint64)fp + 8);
-	printf("%p\n", *ra);
+	  printf("%p\n", *ra);
     fp = (uint64*)*fp;
   }
 }
